@@ -1,14 +1,14 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.lang.NumberFormatException;
 
 public class GradeAnalyzer {
 
+    private static int numSkipped = 0;
     public static void main(String[] args) {
         if (args.length == 0) {
             System.out.println("Input file name is required");
             return;
-        };
+        }
 
         String filename = args[0];
         ArrayList<Integer> scores = readScores(filename);
@@ -23,8 +23,7 @@ public class GradeAnalyzer {
             countF = 0;
 
 
-        for (int i = 0; i < scores.size() - 1; i++) {
-            int score = scores.get(i);
+        for (int score : scores) {
             if (score < low) {
                 low = score;
             } 
@@ -40,7 +39,7 @@ public class GradeAnalyzer {
             else countF++;
         }
 
-        if (scores.size() == 1) {
+        if (scores.isEmpty()) {
             low = 0;
             high = 0;
         }
@@ -49,10 +48,9 @@ public class GradeAnalyzer {
     }
 
     // Returns a list of valid scores read from the file
-    // last entry in scores indicates number of skipped/invalid lines
     public static ArrayList<Integer> readScores(String filename) {
         ArrayList<Integer> scores = new ArrayList<Integer>();
-        int numSkipped = 0;
+        numSkipped = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -74,7 +72,6 @@ public class GradeAnalyzer {
                     numSkipped++;
                 }
             }
-            scores.add(numSkipped);
         } catch (IOException e) {
             System.out.println("Could not read " + filename + ": " + e.getMessage());
         }
@@ -83,15 +80,14 @@ public class GradeAnalyzer {
     }
 
     // Returns the average of a list of scores, or 0.0 if the list is empty
-    // Assumes arraylist last entry is skipped lines - not counted as part of total
     public static double calculateAverage(ArrayList<Integer> scores) {
-        if (scores.size() == 1) return 0.0;
+        if (scores.isEmpty()) return 0.0;
         int total = 0;
-        for (int i = 0; i < scores.size() - 1; i++) {
+        for (int i = 0; i < scores.size(); i++) {
             total += scores.get(i);
         }
 
-        return (double) total / (scores.size() - 1);
+        return (double) total / (scores.size());
     }
 
     // Writes and prints the report
@@ -105,11 +101,11 @@ public class GradeAnalyzer {
             System.out.println("=== Grade Analysis Report ===");
             writer.newLine();
             
-            writer.write(String.format("Total scores processed: %3d%n", scores.size() - 1));
-            System.out.println(String.format("Total scores processed: %3d", scores.size() - 1));
-            writer.write(String.format("Invalid lines skipped: %4d%n", scores.get(scores.size() - 1)));
+            writer.write(String.format("Total scores processed: %3d%n", scores.size()));
+            System.out.println(String.format("Total scores processed: %3d", scores.size()));
+            writer.write(String.format("Invalid lines skipped: %4d%n", numSkipped));
             writer.newLine();
-            System.out.println(String.format("Invalid lines skipped: %4d%n", scores.get(scores.size() - 1)));
+            System.out.println(String.format("Invalid lines skipped: %4d%n", numSkipped));
 
             writer.write(String.format("Average score: %3.2f%n", avg));
             System.out.println(String.format("Average score: %3.2f", avg));
